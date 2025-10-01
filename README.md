@@ -76,8 +76,6 @@ import (
     "github.com/lighthouse-web3/lighthouse-go/lighthouse"
 )
 
-## SDK Quickstart
-```
 func main() {
     client, _ := lighthouse.NewClient(
         lighthouse.WithAPIKey(os.Getenv("LIGHTHOUSE_API_KEY")),
