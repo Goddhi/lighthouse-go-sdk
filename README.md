@@ -1,2 +1,2 @@
-# Lighthouse-web3 Go SDK...
+# Lighthouse-web3 Go SDK
 
