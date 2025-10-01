@@ -23,7 +23,7 @@ func New(h *http.Client, opt Options) *Client {
 	return &Client{
 		inner: h,
 		 opt: opt}
- }
+}
 
 // executes a prepared *http.Request (used for streaming/multipart).
 func (c *Client) Inject(req *http.Request) (*http.Response, error) {

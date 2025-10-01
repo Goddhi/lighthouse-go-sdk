@@ -3,6 +3,7 @@ package lighthouse
 import (
 	"net/http"
 
+	//"github.com/lighthouse-web3/lighthouse-go-sdk/lighthouse/deals"
 	"github.com/lighthouse-web3/lighthouse-go-sdk/lighthouse/files"
 	"github.com/lighthouse-web3/lighthouse-go-sdk/lighthouse/internal/cfg"
 	"github.com/lighthouse-web3/lighthouse-go-sdk/lighthouse/internal/httpx"
@@ -15,6 +16,7 @@ type Client struct {
 
 	storage StorageService
 	files   FilesService
+	deals   DealsService
 }
 
 func NewClient(h *http.Client, options ...Option) *Client {
@@ -36,13 +38,15 @@ func NewClient(h *http.Client, options ...Option) *Client {
 		APIKey:    c.cfg.APIKey,
 	})
 
-	// adapt to cfg.Config for subpackages
 	cc := cfg.Config(c.cfg)
 
 	c.storage = storage.New(hx, cc)
 	c.files = files.New(hx, cc)
+//	c.deals = deals.New(hx, cc)
+
 	return c
 }
 
 func (c *Client) Storage() StorageService { return c.storage }
 func (c *Client) Files() FilesService     { return c.files }
+func (c *Client) Deals() DealsService     { return c.deals }

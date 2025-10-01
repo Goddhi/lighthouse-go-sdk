@@ -22,28 +22,6 @@ type Service struct {
 
 func New(h *httpx.Client, c cfg.Config) *Service { return &Service{h: h, cfg: c} }
 
-// Progress
-type ProgressFunc func(written, total int64)
-
-type progressReader struct {
-	r   io.Reader
-	n   int64
-	all int64
-	fn  ProgressFunc
-}
-
-func (p *progressReader) Read(b []byte) (int, error) {
-	n, err := p.r.Read(b)
-	p.n += int64(n)
-	if p.fn != nil { p.fn(p.n, p.all) }
-	return n, err
-}
-
-func withProgress(r io.Reader, total int64, fn ProgressFunc) io.Reader {
-	if fn == nil { return r }
-	return &progressReader{r: r, all: total, fn: fn}
-}
-
 // Upload
 
 func (s *Service) UploadFile(ctx context.Context, path string, opts ...schema.UploadOption) (*schema.UploadResult, error) {
@@ -56,10 +34,9 @@ func (s *Service) UploadFile(ctx context.Context, path string, opts ...schema.Up
 }
 
 func (s *Service) UploadReader(ctx context.Context, name string, size int64, r io.Reader, opts ...schema.UploadOption) (*schema.UploadResult, error) {
-	// apply options
 	o := schema.DefaultUploadOptions()
 	for _, opt := range opts { opt(o) }
-	r = withProgress(r, size, nil) // wire o.Progress if you expose it
+	r = wrapWithProgress(r, size, nil) 
 
 	pr, pw := io.Pipe()
 	mw := multipart.NewWriter(pw)
@@ -71,12 +48,10 @@ func (s *Service) UploadReader(ctx context.Context, name string, size int64, r i
 		// file field
 		fw, _ := mw.CreateFormFile("file", name)
 		io.Copy(fw, r)
-
-		// example: add pin/public/metadata fields if your API expects them
-		// mw.WriteField("public", strconv.FormatBool(o.Public))
 	}()
+	url := s.cfg.Hosts.Upload + "/api/v0/add?cid-version=1"
 
-	req, err := http.NewRequestWithContext(ctx, "POST", s.cfg.Hosts.Upload+"/api/v0/add", pr)
+	req, err := http.NewRequestWithContext(ctx, "POST", url, pr)
 	if err != nil { return nil, err }
 	req.Header.Set("Content-Type", mw.FormDataContentType())
 

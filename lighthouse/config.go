@@ -6,11 +6,10 @@ import (
 	"github.com/lighthouse-web3/lighthouse-go-sdk/lighthouse/internal/cfg"
 )
 
-// Re-export for public API convenience.
 type Hosts = cfg.Hosts
 type Config = cfg.Config
 
-// DefaultConfig returns SDK defaults (override as needed via options).
+// DefaultConfig returns SDK defaults (override as needed via options)
 func DefaultConfig() Config {
 	c := cfg.Default()
 	if c.UserAgent == "" {

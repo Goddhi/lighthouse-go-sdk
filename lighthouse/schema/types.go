@@ -4,9 +4,9 @@ import "io"
 
 
 type UploadResult struct {
-	Data struct {
-		Hash string `json:"Hash"`
-	} `json:"data"`
+    Name string `json:"Name"`
+    Hash string `json:"Hash"`
+    Size string `json:"Size"`
 }
 
 type Progress struct {
@@ -15,24 +15,63 @@ type Progress struct {
 }
 
 type FileEntry struct {
-	Name string `json:"fileName"`
-	CID  string `json:"cid"`
-	Size int64  `json:"fileSize"`
+    Name       string `json:"fileName"`
+    CID        string `json:"cid"`
+    Size       int64  `json:"fileSize"`
+    ID         string `json:"id,omitempty"`
+    PublicKey  string `json:"publicKey,omitempty"`
+	FileSizeInBytes int64  `json:"fileSizeInBytes"` 
+	FileSizeStr string `json:"FileSizeStr,omitempty"`
+    MimeType   string `json:"mimeType,omitempty"`
+    TxHash     string `json:"txHash,omitempty"`
+    Status     string `json:"status,omitempty"`
+    CreatedAt  int64  `json:"createdAt,omitempty"`
+    LastUpdate int64  `json:"lastUpdate,omitempty"`
+    Encryption bool   `json:"encryption,omitempty"`
 }
 
 type FileList struct {
-	Data    []FileEntry `json:"data"`
-	LastKey *string     `json:"lastKey"`
+	Data       []FileEntry `json:"fileList"`
+	LastKey    *string     `json:",omitempty"`
+	TotalFiles *int        `json:"totalFiles,omitempty"`
 }
 
 type FileInfo struct {
-	Data struct {
-		Hash     string `json:"Hash"`
-		Name     string `json:"Name"`
-		Size     string `json:"Size"`
-		Type     string `json:"Type"`
-		NumLinks int    `json:"NumLinks"`
-	} `json:"data"`
+	FileSizeInBytes int64 `json:"fileSizeInBytes"`
+	CID             string `json:"cid"`
+	Encryption      bool   `json:"encryption"`
+	FileName        string `json:"fileName"`
+	MimeType        string `json:"mimeType"`
+}
+
+type DealStatus struct {
+	ChainDealID        int64  `json:"chainDealID"`
+	EndEpoch           int64  `json:"endEpoch"`
+	PublishCID         string `json:"publishCID"`
+	StorageProvider    string `json:"storageProvider"`
+	DealStatus         string `json:"dealStatus"`
+	BundleID           string `json:"bundleId"`
+	DealUUID           string `json:"dealUUID"`
+	StartEpoch         int64  `json:"startEpoch"`
+	AggregateIn        string `json:"aggregateIn"`
+	ProviderCollateral string `json:"providerCollateral"`
+	PieceCID           string `json:"pieceCID"`
+	PayloadCID         string `json:"payloadCid"`
+	PieceSize          int64  `json:"pieceSize"`
+	CarFileSize        int64  `json:"carFileSize"`      
+	LastUpdate         int64  `json:"lastUpdate"`       
+	DealID             int64  `json:"dealId"`           
+	Miner              string `json:"miner"`       
+	Content            int64  `json:"content"`          
+}
+
+type DealStatusResponse struct {
+	Data []DealStatus `json:"data"`
+}
+
+type Usage struct {
+	DataLimit int64 `json:"dataLimit"`
+	DataUsed  int64 `json:"dataUsed"`
 }
 
 type Reader = io.Reader
@@ -47,12 +86,9 @@ type UploadOptions struct {
 	ChunkSize  int
 	Progress   io.Writer
 	EncryptKey []byte
-	OnProgress ProgressCallback // currently unused (no-op)
+	OnProgress ProgressCallback
 
 }
-
-type ProgressCallback func(Progress)
-
 
 func DefaultUploadOptions() *UploadOptions {
 	return &UploadOptions{
@@ -62,6 +98,7 @@ func DefaultUploadOptions() *UploadOptions {
 		Pin:        false,
 		Public:     true,
 		Progress:   nil,
+		OnProgress: nil,
 		EncryptKey: nil,
 	}
 }
@@ -71,6 +108,12 @@ func (p Progress) Percent() float64 {
 	return float64(p.Uploaded) * 100.0 / float64(p.Total)
 }
 
+type ProgressCallback func(Progress)
+
+
+func WithMimeType(mt string) UploadOption { return func(o *UploadOptions) { o.MimeType = mt } }
+func WithPin() UploadOption               { return func(o *UploadOptions) { o.Pin = true } }
+func WithPrivate() UploadOption           { return func(o *UploadOptions) { o.Public = false } }
 func WithProgress(cb ProgressCallback) UploadOption {
 	return func(o *UploadOptions) { o.OnProgress = cb }
 }
