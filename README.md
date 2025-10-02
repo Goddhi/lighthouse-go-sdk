@@ -71,27 +71,44 @@ package main
 import (
     "context"
     "fmt"
+    "log"
     "os"
 
-    "github.com/lighthouse-web3/lighthouse-go/lighthouse"
+    "github.com/lighthouse-web3/lighthouse-go-sdk/lighthouse"
+    "github.com/lighthouse-web3/lighthouse-go-sdk/lighthouse/schema"
 )
 
 func main() {
-    client, _ := lighthouse.NewClient(
+    // Create client
+    client := lighthouse.NewClient(nil,
         lighthouse.WithAPIKey(os.Getenv("LIGHTHOUSE_API_KEY")),
     )
 
-    // Upload
-    file, _ := os.Open("README.md")
-    result, _ := client.Storage.UploadReader(context.Background(), "README.md", 0, file)
-    fmt.Println("Uploaded CID:", result.Hash)
+    ctx := context.Background()
 
-    // Info
-    info, _ := client.Files.Info(context.Background(), result.Hash)
-    fmt.Printf("File Info: %+v\n", info)
+    // Upload file with progress
+    result, err := client.Storage().UploadFile(ctx, "README.md",
+        schema.WithProgress(func(p schema.Progress) {
+            fmt.Printf("\rUploading: %.1f%%", p.Percent())
+        }),
+    )
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("\nUploaded CID: %s\n", result.Data.Hash)
 
-    // Deals
-    deals, _ := client.Deals.Status(context.Background(), result.Hash)
-    fmt.Printf("Deals: %+v\n", deals)
+    // Get file info
+    info, err := client.Files().Info(ctx, result.Data.Hash)
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("File: %s (%s bytes)\n", info.FileName, info.FileSizeInBytes)
+
+    // Check deals
+    deals, err := client.Deals().Status(ctx, result.Data.Hash)
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("Deals: %d\n", len(deals))
 }
 ```
