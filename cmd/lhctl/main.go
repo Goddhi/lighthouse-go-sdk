@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/lighthouse-web3/lighthouse-go-sdk/lighthouse"
 	"github.com/lighthouse-web3/lighthouse-go-sdk/lighthouse/schema"
@@ -24,6 +25,26 @@ func valueOrNil(p *string) string {
 		return "<nil>"
 	}
 	return *p
+}
+
+func progressBar(percent int, width int) string {
+	if percent < 0 {
+		percent = 0
+	}
+	if percent > 100 {
+		percent = 100
+	}
+	
+	filled := (percent * width) / 100
+	if filled < 0 {
+		filled = 0
+	}
+	if filled > width {
+		filled = width
+	}
+	
+	bar := strings.Repeat(".", filled) + strings.Repeat(",", width-filled)
+	return fmt.Sprintf("[%s]", bar)
 }
 
 func main() {
@@ -46,18 +67,31 @@ func main() {
 
 	switch {
 	case *upload != "":
-		res, err := cli.Storage().UploadFile(
-			ctx,
-			*upload,
-			schema.WithProgress(func(p schema.Progress) {
-				fmt.Printf("\ruploaded %d/%d (%.2f%%)", p.Uploaded, p.Total, p.Percent())
-			}),
-		)
-		fmt.Println()
-		if err != nil {
+		startTime := time.Now()
+		var lastPercent float64
+
+		res, err := cli.Storage().UploadFile(ctx, *upload, schema.WithProgress(func(p schema.Progress) {
+			percent := p.Percent()
+			if percent-lastPercent >= 1.0 || percent >= 100.0{
+				elapsed := time.Since(startTime).Seconds()
+				speed := float64(p.Uploaded) / elapsed / 1024 / 1024
+
+				bar := progressBar(int(percent), 40)
+				fmt.Printf("\r%s %.1f%% (%d/%d bytes) %.2f MB/s",
+					bar, percent, p.Uploaded, p.Total, speed)
+				lastPercent = percent
+			}
+			}))
+
+			fmt.Println()
+
+			if err != nil {
 			log.Fatal(err)
-		}
-		fmt.Printf("Uploaded %s (%s bytes)\nCID: %s\n", res.Name,  res.Size, res.Hash)
+			}
+
+			fmt.Print("Upload complete!\n")
+			fmt.Printf("CID %s\n", res.Hash)
+			fmt.Printf("Time: %.2fs\n", time.Since(startTime).Seconds())
 
 	case *info != "":
 		i, err := cli.Files().Info(ctx, *info)
@@ -75,7 +109,6 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		// Show a few helpful columns (including ID so users can --delete)
 		fmt.Printf("TOTAL=%d  NEXT=%v\n", valueOrZero(ls.TotalFiles), valueOrNil(ls.LastKey))
 		fmt.Println("CID\tID\tSIZE(bytes)\tNAME")
 		for _, f := range ls.Data {
