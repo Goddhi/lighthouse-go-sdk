@@ -60,6 +60,12 @@ func main() {
 	lastKey := flag.String("last-key", "", "pagination cursor for --list")
 	deals := flag.String("deals", "", "CID to fetch Filecoin deal status")
 	del := flag.String("delete", "", "file ID to delete (use --list to find IDs)")
+
+	ipnsGenerate := flag.String("ipns-generate", "", "generate IPNS key with given name")
+	ipnsPublish := flag.String("ipns-publish", "", "publish CID to IPNS key (format: cid:keyName)")
+	ipnsList := flag.Bool("ipns-list", false, "list all IPNS keys")
+	ipnsRemove := flag.String("ipns-remove", "", "remove IPNS key by name")
+	
 	flag.Parse()
 
 	cli := lighthouse.NewClient(nil, lighthouse.WithAPIKey(apiKey))
@@ -151,7 +157,61 @@ func main() {
 			log.Fatal(err)
 		}
 		fmt.Println("Delete request completed.")
+	
+	case *ipnsGenerate != "":
+		key, err := cli.IPNS().GenerateKey(ctx, *ipnsGenerate)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println("IPNS key generated")
+		fmt.Printf("Key Name: %s\n", *ipnsGenerate)
+		fmt.Printf("IPNS Name: %s\n", key.IPNSName)
+		fmt.Printf("IPNS ID: %s\n", key.IPNSId)
+		fmt.Printf("\nAccess via: https://gateway.lighthouse.storage/ipns/%s\n", key.IPNSId)
 
+	case *ipnsPublish != "":
+		parts := strings.Split(*ipnsPublish, ":")
+		if len(parts) != 2 {
+			log.Fatal("format: --ipns-publish cid:keyName")
+		}
+
+		result, err := cli.IPNS().PublishRecord(ctx, parts[0], parts[1])
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println("IPNS record published!")
+		fmt.Printf("IPNS ID: %s\n", result.Name)
+		fmt.Printf("Points to: %s\n", result.Value)
+		fmt.Printf("\nAccess via: https://gateway.lighthouse.storage/ipns/%s\n", result.Name)
+
+	case *ipnsList:
+		keys, err := cli.IPNS().ListKeys(ctx)
+		if err != nil {
+			log.Fatal(err)
+		}
+		
+		if len(keys) == 0 {
+			fmt.Println("No IPNS keys found.")
+			return
+		}
+		
+		fmt.Printf("Found %d IPNS key(s):\n\n", len(keys))
+		fmt.Printf("%-35s %-65s %-50s %s\n", "Name", "IPNS ID", "Current CID", "Last Update")
+		fmt.Println(strings.Repeat("-", 170))
+		
+		for _, k := range keys {
+			lastUpdate := time.UnixMilli(k.LastUpdate).Format("2006-01-02 15:04:05")
+			fmt.Printf("%-35s %-65s %-50s %s\n", k.IPNSName, k.IPNSId, k.CID, lastUpdate)
+		}
+
+	case *ipnsRemove != "":
+		result, err := cli.IPNS().RemoveKey(ctx, *ipnsRemove)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("✓ IPNS key '%s' removed!\n", *ipnsRemove)
+		fmt.Printf("Remaining keys: %d\n", len(result.Keys))
+		
 	default:
 		usage()
 	}

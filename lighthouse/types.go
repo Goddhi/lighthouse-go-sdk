@@ -22,3 +22,10 @@ type FilesService interface {
 type DealsService interface {
 	Status(ctx context.Context, cid string) ([]schema.DealStatus, error)
 }
+
+type IPNSService interface {
+	GenerateKey(ctx context.Context, keyName string) (*schema.IPNSKeyResponse, error)
+	PublishRecord(ctx context.Context, cid, keyName string) (*schema.IPNSPublishResponse, error)
+	ListKeys(ctx context.Context) ([]schema.IPNSRecord, error)  // Make sure this matches
+	RemoveKey(ctx context.Context, keyName string) (*schema.IPNSRemoveResponse, error)
+}

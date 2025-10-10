@@ -14,6 +14,11 @@ type Progress struct {
 	Total    int64
 }
 
+type IPNSPublishResponse struct {
+	Name  string `json:"Name"`  
+	Value string `json:"Value"` 
+}
+
 type FileEntry struct {
     Name       string `json:"fileName"`
     CID        string `json:"cid"`
@@ -72,6 +77,28 @@ type DealStatusResponse struct {
 type Usage struct {
 	DataLimit int64 `json:"dataLimit"`
 	DataUsed  int64 `json:"dataUsed"`
+}
+
+type IPNSKeyResponse struct {
+	IPNSName string `json:"ipnsName"` 
+	IPNSId   string `json:"ipnsId"`   
+}
+
+type IPNSRecord struct {
+	IPNSName   string `json:"ipnsName"`
+	IPNSId     string `json:"ipnsId"`
+	PublicKey  string `json:"publicKey"`
+	CID        string `json:"cid"`
+	LastUpdate int64  `json:"lastUpdate"` 
+}
+
+type IPNSKey struct {
+	Name string `json:"Name"` 
+	Id   string `json:"Id"`  
+}
+
+type IPNSRemoveResponse struct {
+	Keys []IPNSKey `json:"Keys"`
 }
 
 type Reader = io.Reader

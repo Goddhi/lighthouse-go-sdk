@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"encoding/json"
+	
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -154,4 +155,14 @@ func (s *Service) UploadReader(ctx context.Context, name string, size int64, r i
 		})
 	}
 	return &result, nil
+}
+
+func (s *Service) UploadText(ctx context.Context, filename, text string, opts ...schema.UploadOption) (*schema.UploadResult, error) {
+	r := bytes.NewReader([]byte(text))
+	return s.UploadReader(ctx, filename, int64(len(text)), r, opts...)
+}
+
+func (s *Service) UploadBuffer(ctx context.Context, filename string, data []byte, opts ...schema.UploadOption) (*schema.UploadResult, error) {
+	r := bytes.NewReader(data)
+	return s.UploadReader(ctx, filename, int64(len(data)), r, opts...)
 }
