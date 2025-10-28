@@ -19,10 +19,10 @@ type Client struct {
 	opt   Options
 }
 
-func New(h *http.Client, opt Options) *Client { 
+func New(h *http.Client, opt Options) *Client {
 	return &Client{
 		inner: h,
-		 opt: opt}
+		opt:   opt}
 }
 
 // executes a prepared *http.Request (used for streaming/multipart).

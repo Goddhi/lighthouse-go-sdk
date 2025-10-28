@@ -18,7 +18,7 @@ type Client struct {
 	storage StorageService
 	files   FilesService
 	deals   DealsService
-	ipns 	IPNSService
+	ipns    IPNSService
 }
 
 func NewClient(h *http.Client, options ...Option) *Client {
@@ -45,7 +45,7 @@ func NewClient(h *http.Client, options ...Option) *Client {
 	c.files = files.New(hx, cc)
 	c.deals = deals.New(hx, cc)
 	c.ipns = ipns.New(hx, cc)
-	
+
 	return c
 }
 
@@ -53,4 +53,3 @@ func (c *Client) Storage() StorageService { return c.storage }
 func (c *Client) Files() FilesService     { return c.files }
 func (c *Client) Deals() DealsService     { return c.deals }
 func (c *Client) IPNS() IPNSService       { return c.ipns }
-

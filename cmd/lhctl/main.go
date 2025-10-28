@@ -34,7 +34,7 @@ func progressBar(percent int, width int) string {
 	if percent > 100 {
 		percent = 100
 	}
-	
+
 	filled := (percent * width) / 100
 	if filled < 0 {
 		filled = 0
@@ -42,7 +42,7 @@ func progressBar(percent int, width int) string {
 	if filled > width {
 		filled = width
 	}
-	
+
 	bar := strings.Repeat(".", filled) + strings.Repeat(",", width-filled)
 	return fmt.Sprintf("[%s]", bar)
 }
@@ -65,11 +65,10 @@ func main() {
 	ipnsPublish := flag.String("ipns-publish", "", "publish CID to IPNS key (format: cid:keyName)")
 	ipnsList := flag.Bool("ipns-list", false, "list all IPNS keys")
 	ipnsRemove := flag.String("ipns-remove", "", "remove IPNS key by name")
-	
+
 	flag.Parse()
 
 	cli := lighthouse.NewClient(nil, lighthouse.WithAPIKey(apiKey))
-
 
 	switch {
 	case *upload != "":
@@ -78,7 +77,7 @@ func main() {
 
 		res, err := cli.Storage().UploadFile(ctx, *upload, schema.WithProgress(func(p schema.Progress) {
 			percent := p.Percent()
-			if percent-lastPercent >= 1.0 || percent >= 100.0{
+			if percent-lastPercent >= 1.0 || percent >= 100.0 {
 				elapsed := time.Since(startTime).Seconds()
 				speed := float64(p.Uploaded) / elapsed / 1024 / 1024
 
@@ -87,17 +86,17 @@ func main() {
 					bar, percent, p.Uploaded, p.Total, speed)
 				lastPercent = percent
 			}
-			}))
+		}))
 
-			fmt.Println()
+		fmt.Println()
 
-			if err != nil {
+		if err != nil {
 			log.Fatal(err)
-			}
+		}
 
-			fmt.Print("Upload complete!\n")
-			fmt.Printf("CID %s\n", res.Hash)
-			fmt.Printf("Time: %.2fs\n", time.Since(startTime).Seconds())
+		fmt.Print("Upload complete!\n")
+		fmt.Printf("CID %s\n", res.Hash)
+		fmt.Printf("Time: %.2fs\n", time.Since(startTime).Seconds())
 
 	case *info != "":
 		i, err := cli.Files().Info(ctx, *info)
@@ -126,16 +125,16 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		
+
 		if len(ds) == 0 {
 			fmt.Println("No deals found.")
 			return
 		}
-		
+
 		fmt.Printf("Found %d deal(s):\n\n", len(ds))
 		fmt.Printf("%-30s %-20s %-50s %s\n", "Provider", "Status", "PieceCID", "ChainDealID")
 		fmt.Println(strings.Repeat("-", 120))
-		
+
 		for _, d := range ds {
 			provider := d.StorageProvider
 			if provider == "" {
@@ -149,7 +148,7 @@ func main() {
 			if pieceCID == "" {
 				pieceCID = "(empty)"
 			}
-			
+
 			fmt.Printf("%-30s %-20s %-50s %d\n", provider, status, pieceCID, d.ChainDealID)
 		}
 	case *del != "":
@@ -157,7 +156,7 @@ func main() {
 			log.Fatal(err)
 		}
 		fmt.Println("Delete request completed.")
-	
+
 	case *ipnsGenerate != "":
 		key, err := cli.IPNS().GenerateKey(ctx, *ipnsGenerate)
 		if err != nil {
@@ -189,16 +188,16 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		
+
 		if len(keys) == 0 {
 			fmt.Println("No IPNS keys found.")
 			return
 		}
-		
+
 		fmt.Printf("Found %d IPNS key(s):\n\n", len(keys))
 		fmt.Printf("%-35s %-65s %-50s %s\n", "Name", "IPNS ID", "Current CID", "Last Update")
 		fmt.Println(strings.Repeat("-", 170))
-		
+
 		for _, k := range keys {
 			lastUpdate := time.UnixMilli(k.LastUpdate).Format("2006-01-02 15:04:05")
 			fmt.Printf("%-35s %-65s %-50s %s\n", k.IPNSName, k.IPNSId, k.CID, lastUpdate)
@@ -211,7 +210,7 @@ func main() {
 		}
 		fmt.Printf("✓ IPNS key '%s' removed!\n", *ipnsRemove)
 		fmt.Printf("Remaining keys: %d\n", len(result.Keys))
-		
+
 	default:
 		usage()
 	}

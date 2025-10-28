@@ -10,7 +10,7 @@ import (
 )
 
 type Service struct {
-	h *httpx.Client
+	h   *httpx.Client
 	cfg cfg.Config
 }
 
@@ -43,13 +43,13 @@ func (s *Service) PublishRecord(ctx context.Context, cid, keyName string) (*sche
 
 func (s *Service) ListKeys(ctx context.Context) ([]schema.IPNSRecord, error) {
 	u := s.cfg.Hosts.API + "/api/ipns/get_ipns_records"
-	
+
 	var records []schema.IPNSRecord
 	_, err := s.h.WriteJSON(ctx, "GET", u, nil, &records)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return records, nil
 }
 

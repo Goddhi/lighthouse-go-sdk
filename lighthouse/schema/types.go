@@ -2,11 +2,10 @@ package schema
 
 import "io"
 
-
 type UploadResult struct {
-    Name string `json:"Name"`
-    Hash string `json:"Hash"`
-    Size string `json:"Size"`
+	Name string `json:"Name"`
+	Hash string `json:"Hash"`
+	Size string `json:"Size"`
 }
 
 type Progress struct {
@@ -15,24 +14,24 @@ type Progress struct {
 }
 
 type IPNSPublishResponse struct {
-	Name  string `json:"Name"`  
-	Value string `json:"Value"` 
+	Name  string `json:"Name"`
+	Value string `json:"Value"`
 }
 
 type FileEntry struct {
-    Name       string `json:"fileName"`
-    CID        string `json:"cid"`
-    Size       int64  `json:"fileSize"`
-    ID         string `json:"id,omitempty"`
-    PublicKey  string `json:"publicKey,omitempty"`
-	FileSizeInBytes int64  `json:"fileSizeInBytes"` 
-	FileSizeStr string `json:"FileSizeStr,omitempty"`
-    MimeType   string `json:"mimeType,omitempty"`
-    TxHash     string `json:"txHash,omitempty"`
-    Status     string `json:"status,omitempty"`
-    CreatedAt  int64  `json:"createdAt,omitempty"`
-    LastUpdate int64  `json:"lastUpdate,omitempty"`
-    Encryption bool   `json:"encryption,omitempty"`
+	Name            string `json:"fileName"`
+	CID             string `json:"cid"`
+	Size            int64  `json:"fileSize"`
+	ID              string `json:"id,omitempty"`
+	PublicKey       string `json:"publicKey,omitempty"`
+	FileSizeInBytes int64  `json:"fileSizeInBytes"`
+	FileSizeStr     string `json:"FileSizeStr,omitempty"`
+	MimeType        string `json:"mimeType,omitempty"`
+	TxHash          string `json:"txHash,omitempty"`
+	Status          string `json:"status,omitempty"`
+	CreatedAt       int64  `json:"createdAt,omitempty"`
+	LastUpdate      int64  `json:"lastUpdate,omitempty"`
+	Encryption      bool   `json:"encryption,omitempty"`
 }
 
 type FileList struct {
@@ -42,7 +41,7 @@ type FileList struct {
 }
 
 type FileInfo struct {
-	FileSizeInBytes int64 `json:"fileSizeInBytes"`
+	FileSizeInBytes int64  `json:"fileSizeInBytes"`
 	CID             string `json:"cid"`
 	Encryption      bool   `json:"encryption"`
 	FileName        string `json:"fileName"`
@@ -63,11 +62,11 @@ type DealStatus struct {
 	PieceCID           string `json:"pieceCID"`
 	PayloadCID         string `json:"payloadCid"`
 	PieceSize          int64  `json:"pieceSize"`
-	CarFileSize        int64  `json:"carFileSize"`      
-	LastUpdate         int64  `json:"lastUpdate"`       
-	DealID             int64  `json:"dealId"`           
-	Miner              string `json:"miner"`       
-	Content            int64  `json:"content"`          
+	CarFileSize        int64  `json:"carFileSize"`
+	LastUpdate         int64  `json:"lastUpdate"`
+	DealID             int64  `json:"dealId"`
+	Miner              string `json:"miner"`
+	Content            int64  `json:"content"`
 }
 
 type DealStatusResponse struct {
@@ -80,8 +79,8 @@ type Usage struct {
 }
 
 type IPNSKeyResponse struct {
-	IPNSName string `json:"ipnsName"` 
-	IPNSId   string `json:"ipnsId"`   
+	IPNSName string `json:"ipnsName"`
+	IPNSId   string `json:"ipnsId"`
 }
 
 type IPNSRecord struct {
@@ -89,12 +88,12 @@ type IPNSRecord struct {
 	IPNSId     string `json:"ipnsId"`
 	PublicKey  string `json:"publicKey"`
 	CID        string `json:"cid"`
-	LastUpdate int64  `json:"lastUpdate"` 
+	LastUpdate int64  `json:"lastUpdate"`
 }
 
 type IPNSKey struct {
-	Name string `json:"Name"` 
-	Id   string `json:"Id"`  
+	Name string `json:"Name"`
+	Id   string `json:"Id"`
 }
 
 type IPNSRemoveResponse struct {
@@ -114,7 +113,6 @@ type UploadOptions struct {
 	Progress   io.Writer
 	EncryptKey []byte
 	OnProgress ProgressCallback
-
 }
 
 func DefaultUploadOptions() *UploadOptions {
@@ -131,12 +129,13 @@ func DefaultUploadOptions() *UploadOptions {
 }
 
 func (p Progress) Percent() float64 {
-	if p.Total == 0 { return 0 }
+	if p.Total == 0 {
+		return 0
+	}
 	return float64(p.Uploaded) * 100.0 / float64(p.Total)
 }
 
 type ProgressCallback func(Progress)
-
 
 func WithMimeType(mt string) UploadOption { return func(o *UploadOptions) { o.MimeType = mt } }
 func WithPin() UploadOption               { return func(o *UploadOptions) { o.Pin = true } }
@@ -144,5 +143,3 @@ func WithPrivate() UploadOption           { return func(o *UploadOptions) { o.Pu
 func WithProgress(cb ProgressCallback) UploadOption {
 	return func(o *UploadOptions) { o.OnProgress = cb }
 }
-
-

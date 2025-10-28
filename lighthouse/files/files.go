@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/url"
 
-	"github.com/lighthouse-web3/lighthouse-go-sdk/lighthouse/internal/httpx"
 	"github.com/lighthouse-web3/lighthouse-go-sdk/lighthouse/internal/cfg"
+	"github.com/lighthouse-web3/lighthouse-go-sdk/lighthouse/internal/httpx"
 	"github.com/lighthouse-web3/lighthouse-go-sdk/lighthouse/schema"
 )
 
@@ -14,8 +14,8 @@ type Service struct {
 	cfg cfg.Config
 }
 
-func New(h *httpx.Client, c cfg.Config) *Service { 
-	return &Service{h: h, cfg: c} 
+func New(h *httpx.Client, c cfg.Config) *Service {
+	return &Service{h: h, cfg: c}
 }
 
 func (s *Service) List(ctx context.Context, lastKey *string) (*schema.FileList, error) {
@@ -23,18 +23,18 @@ func (s *Service) List(ctx context.Context, lastKey *string) (*schema.FileList, 
 	if lastKey != nil {
 		u += "?lastKey=" + url.QueryEscape(*lastKey)
 	}
-	
+
 	var dataResult struct {
 		FileList   []schema.FileEntry `json:"fileList"`
 		TotalFiles int                `json:"totalFiles"`
 		LastKey    *string            `json:"lastKey,omitempty"`
 	}
-	
+
 	_, err := s.h.WriteJSON(ctx, "GET", u, nil, &dataResult)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &schema.FileList{
 		Data:       dataResult.FileList,
 		TotalFiles: &dataResult.TotalFiles,
@@ -62,12 +62,11 @@ func (s *Service) Delete(ctx context.Context, id string) error {
 	var response struct {
 		Message string `json:"message"`
 	}
-	
+
 	_, err := s.h.WriteJSON(ctx, "DELETE", u, nil, &response)
 	if err != nil {
 		return err
 	}
-	
+
 	return nil
 }
-

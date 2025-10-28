@@ -1,9 +1,10 @@
 package storage
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
-	
+
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -12,9 +13,8 @@ import (
 	"path/filepath"
 	"sync/atomic"
 
-
-	"github.com/lighthouse-web3/lighthouse-go-sdk/lighthouse/internal/httpx"
 	"github.com/lighthouse-web3/lighthouse-go-sdk/lighthouse/internal/cfg"
+	"github.com/lighthouse-web3/lighthouse-go-sdk/lighthouse/internal/httpx"
 	"github.com/lighthouse-web3/lighthouse-go-sdk/lighthouse/schema"
 )
 
@@ -23,8 +23,8 @@ type Service struct {
 	cfg cfg.Config
 }
 
-func New(h *httpx.Client, c cfg.Config) *Service { 
-	return &Service{h: h, cfg: c} 
+func New(h *httpx.Client, c cfg.Config) *Service {
+	return &Service{h: h, cfg: c}
 }
 
 type progressReader struct {
@@ -51,7 +51,7 @@ func (p *progressReader) Read(b []byte) (int, error) {
 func (s *Service) UploadFile(ctx context.Context, path string, opts ...schema.UploadOption) (*schema.UploadResult, error) {
 	f, err := os.Open(path)
 	if err != nil {
-		 return nil, err 
+		return nil, err
 	}
 	defer f.Close()
 
@@ -64,8 +64,8 @@ func (s *Service) UploadFile(ctx context.Context, path string, opts ...schema.Up
 
 func (s *Service) UploadReader(ctx context.Context, name string, size int64, r io.Reader, opts ...schema.UploadOption) (*schema.UploadResult, error) {
 	o := schema.DefaultUploadOptions()
-	for _, opt := range opts { 
-		opt(o) 
+	for _, opt := range opts {
+		opt(o)
 	}
 
 	pr, pw := io.Pipe()
@@ -76,7 +76,6 @@ func (s *Service) UploadReader(ctx context.Context, name string, size int64, r i
 	headerSize := int64(len(fmt.Sprintf("--%s\r\nContent-Disposition: form-data; name=\"file\"; filename=\"%s\"\r\nContent-Type: application/octet-stream\r\n\r\n", boundary, name)))
 	footerSize := int64(len(fmt.Sprintf("\r\n--%s--\r\n", boundary)))
 	totalSize := headerSize + size + footerSize
-
 
 	// Goroutine to write multipart data
 	go func() {
@@ -116,7 +115,7 @@ func (s *Service) UploadReader(ctx context.Context, name string, size int64, r i
 	}()
 
 	var uploaded int64
-	progressPipeReader := io.Reader(pr)  // Type as io.Reader, not *io.PipeReader
+	progressPipeReader := io.Reader(pr) // Type as io.Reader, not *io.PipeReader
 	if o.OnProgress != nil {
 		progressPipeReader = &progressReader{
 			r:        pr,
@@ -128,13 +127,13 @@ func (s *Service) UploadReader(ctx context.Context, name string, size int64, r i
 	url := s.cfg.Hosts.Upload + "/api/v0/add?cid-version=1"
 	req, err := http.NewRequestWithContext(ctx, "POST", url, progressPipeReader)
 	if err != nil {
-		 return nil, err 
-		}
+		return nil, err
+	}
 	req.Header.Set("Content-Type", mw.FormDataContentType())
 
 	res, err := s.h.Inject(req)
-	if err != nil { 
-		return nil, err 
+	if err != nil {
+		return nil, err
 	}
 	defer res.Body.Close()
 
@@ -147,7 +146,7 @@ func (s *Service) UploadReader(ctx context.Context, name string, size int64, r i
 	if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
 		return nil, err
 	}
-	
+
 	if o.OnProgress != nil {
 		o.OnProgress(schema.Progress{
 			Uploaded: totalSize,

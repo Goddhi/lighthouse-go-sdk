@@ -15,7 +15,7 @@ type StorageService interface {
 type FilesService interface {
 	List(ctx context.Context, lastKey *string) (*schema.FileList, error)
 	Info(ctx context.Context, cid string) (*schema.FileInfo, error)
-	Pin(ctx context.Context, cid, name string) error	
+	Pin(ctx context.Context, cid, name string) error
 	Delete(ctx context.Context, id string) error
 }
 
@@ -26,6 +26,6 @@ type DealsService interface {
 type IPNSService interface {
 	GenerateKey(ctx context.Context, keyName string) (*schema.IPNSKeyResponse, error)
 	PublishRecord(ctx context.Context, cid, keyName string) (*schema.IPNSPublishResponse, error)
-	ListKeys(ctx context.Context) ([]schema.IPNSRecord, error)  // Make sure this matches
+	ListKeys(ctx context.Context) ([]schema.IPNSRecord, error) // Make sure this matches
 	RemoveKey(ctx context.Context, keyName string) (*schema.IPNSRemoveResponse, error)
 }
